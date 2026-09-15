@@ -2,7 +2,7 @@
 """Draw the weather icons of chicago/weather — assets/images/{32,16}/<name>.png.
 
 The image pack `chicago.weather:images` of the Chicago shell (contract:
-../windows-module/docs/icons.md, "Image packs of other modules"): the shell
+../shell/docs/icons.md, "Image packs of other modules"): the shell
 finds the pack in the registry when a picture is asked for, so a redrawn
 file shows within seconds, no restart. Original pixel art in the Windows 95
 palette (flat fills, a one-pixel black outline). Every icon is a stack of
