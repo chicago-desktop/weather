@@ -1,0 +1,3 @@
+organization: windows
+module: weather-harness
+description: Standalone runnable harness that boots windows/weather with the shell and runs its co-located *_test.lua suites.

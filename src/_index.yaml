@@ -1,0 +1,289 @@
+version: "1.0"
+namespace: windows.weather
+
+# Weather for the Windows 95 shell: a window with the current weather, the
+# week's forecast and a city search; the temperature in the tray next to the
+# clock; a desktop widget.
+#
+# Three parts, each with one job. The service (`forecaster`) is the only one
+# that goes to the network and writes to the database: it remembers the city,
+# asks Open-Meteo every 15 minutes and refreshes the tray item every minute
+# with the compositor's `desktop.tray`. The window and the widget ask the
+# service with a message and draw the answer; they have no network and no
+# database. The library (`forecast`) holds the parsing and the captions they
+# share.
+#
+# Open-Meteo answers without a key: the weather needs neither a secret nor a
+# connection, and an application without them does not break.
+
+entries:
+  - name: definition
+    kind: ns.definition
+    meta:
+      title: Weather
+      description: Weather for the Windows 95 shell — a window with the current weather, the week's forecast and a city search, the temperature in the tray and a desktop widget; data from Open-Meteo, no key needed.
+
+  # ─── What the module takes from others ────────────────────────────────
+  - version: "*"
+    name: dep.wippy.migration
+    kind: ns.dependency
+    meta:
+      comment: "The migration of the weather settings table."
+    component: wippy/migration
+
+  # The shell: the window SDK (`app`, `ui`, `gadget`), the desktop families
+  # (`windows.shell.api:control`) and, through it, the base's window API
+  # with the tray command.
+  - version: "*"
+    name: dep.windows.shell
+    kind: ns.dependency
+    meta:
+      comment: "The Windows 95 shell — the window SDK and widget kit, and the desktops whose tray gets the weather."
+    component: windows/shell
+
+  # ─── What the module asks of the application ──────────────────────────
+  # The database is named ONCE, here: the migration gets it as meta.target_db
+  # and the service reads it back from that entry (service.lua), as the
+  # shell's persist does. The same value opens db.get for the service.
+  - name: target_db
+    kind: ns.requirement
+    meta:
+      comment: "The database the weather keeps its settings in — the chosen city."
+    default: app:db
+    targets:
+      - entry: windows.weather:01_settings
+        path: .meta.target_db
+      - entry: windows.weather:service_db
+        path: .policy.resources +=
+
+  - name: process_host
+    kind: ns.requirement
+    meta:
+      comment: "The process host the weather service runs on."
+    default: app:processes
+    targets:
+      - entry: windows.weather:forecaster.service
+        path: .host
+
+  # ─── The library ──────────────────────────────────────────────────────
+  # windows.weather:forecast
+  - name: forecast
+    kind: library.lua
+    meta:
+      comment: "Open-Meteo's answers parsed, WMO weather codes, the two request URLs, captions for the window, the widget and the tray — one representation for all of them."
+    source: file://forecast.lua
+
+  # windows.weather:settings
+  - name: settings
+    kind: library.lua
+    meta:
+      comment: "The settings table's name and the one-time copy of the city an application kept in app_weather_settings."
+    source: file://settings.lua
+
+  # windows.weather:images
+  #
+  # An image pack of the Windows 95 shell (`meta.type: windows.images`,
+  # contract in the shell's docs/icons.md, "Image packs"): PNGs lie as
+  # `<size>/<name>.png`, the window and the tray call them
+  # `windows.weather:images/<name>`. Own pixel art, drawn by
+  # tools/weather_icons.py (`make icons`). The shell finds the pack in the
+  # registry when a picture is asked for, so a redrawn file shows without a
+  # restart; the compositor reads it with its own rights.
+  - name: images
+    kind: fs.directory
+    meta:
+      type: windows.images
+      comment: "Weather pictures for the tray, the window and the widget — an image pack of the Windows 95 shell, own pixel art."
+    base: module
+    directory: ./assets/images
+    auto_init: false
+
+  # ─── The service ──────────────────────────────────────────────────────
+  # `process.registry` is the lookup by name; taking a name is a separate
+  # right, `process.registry.register`. Without it the service starts and
+  # stops at once with "not allowed to register name".
+  - name: service_scope
+    kind: security.policy
+    meta:
+      comment: "The weather service — take its name, find the desktops, answer the window and the widget, put the item in each tray."
+    policy:
+      actions:
+        - process.registry
+        - process.registry.register
+        - process.registry.unregister
+        - process.send
+      resources: "*"
+      effect: allow
+
+  # The resource is the application's database, filled in by `target_db`.
+  - name: service_db
+    kind: security.policy
+    meta:
+      comment: "The weather service keeps the chosen city in the application's database."
+    policy:
+      actions:
+        - db.get
+      resources: []
+      effect: allow
+
+  # The migration entry names the database; the service reads it back.
+  - name: service_registry
+    kind: security.policy
+    meta:
+      comment: "The weather service reads its migration entry — the database the application named."
+    policy:
+      actions:
+        - registry.get
+      resources:
+        - windows.weather:01_settings
+      effect: allow
+
+  # The two Open-Meteo hosts by name, not `https://*`: a service open to the
+  # whole internet is not the same as a weather service.
+  - name: service_http
+    kind: security.policy
+    meta:
+      comment: "The weather service goes only to Open-Meteo's forecast and geocoder."
+    policy:
+      actions:
+        - http_client.request
+      resources:
+        - https://api.open-meteo.com/*
+        - https://geocoding-api.open-meteo.com/*
+      effect: allow
+
+  # windows.weather:forecaster
+  - name: forecaster
+    kind: process.lua
+    meta:
+      comment: "The weather service — the city from the database, the forecast from Open-Meteo, the tray item next to the clock; answers the window and the widget on weather.ask."
+    source: file://service.lua
+    method: main
+    modules:
+      - channel
+      - http_client
+      - json
+      - logger
+      - process
+      - registry
+      - sql
+      - time
+    imports:
+      forecast: windows.weather:forecast
+      settings: windows.weather:settings
+      desktop: windows.tui_desktop.desktop:window_api
+      control: windows.shell.api:control
+
+  # windows.weather:forecaster.service — its host is the
+  # `process_host` requirement's.
+  - name: forecaster.service
+    kind: process.service
+    meta:
+      comment: "Keeps the weather service running — the tray is refreshed with the window closed too."
+    process: windows.weather:forecaster
+    lifecycle:
+      auto_start: true
+      restart:
+        initial_delay: 5s
+        max_attempts: 10
+        backoff_factor: 2.0
+      security:
+        actor:
+          id: windows.weather.forecaster
+        policies:
+          - windows.weather:service_scope
+          - windows.weather:service_db
+          - windows.weather:service_registry
+          - windows.weather:service_http
+
+  # ─── The window and the widget ────────────────────────────────────────
+  - name: window_scope
+    kind: security.policy
+    meta:
+      comment: "The weather window and widget — find the service and the compositor in the process registry and write to them."
+    policy:
+      actions:
+        - process.context
+        - process.registry
+        - process.send
+      resources: "*"
+      effect: allow
+
+  # windows.weather:window
+  - name: window
+    kind: process.lua
+    meta:
+      type: tui_desktop.window
+      title: Weather
+      image: windows.weather:images/sun_cloud
+      icon: "☼"
+      group: Programs
+      order: 25
+      width: 64
+      height: 24
+      window_type: app
+      resizable: true
+      pixel_render: windows.shell.sdk:render
+      pixel_state: windows.weather:window
+      comment: "Weather — now, the week's forecast and a city search; the data is the service's, and a click on the temperature in the tray opens this window."
+    source: file://window.lua
+    method: main
+    modules:
+      - process
+    imports:
+      app: windows.shell.sdk:app
+      forecast: windows.weather:forecast
+    security:
+      policies: [windows.weather:window_scope]
+
+  # windows.weather:widget_view
+  - name: widget_view
+    kind: library.lua
+    meta:
+      comment: "The weather widget's tree — the tray's three states by the same forecast.tray rule; apart from the process so a test checks it."
+    source: file://widget_view.lua
+    imports:
+      forecast: windows.weather:forecast
+      gadget: windows.shell.sdk:gadget
+
+  # windows.weather:widget
+  #
+  # A widget on the shell's desktop (the shell's docs/sdk.md, "Desktop
+  # widgets"): the temperature with a picture, the city and the weather in
+  # words. The data is the service's, as for the window: the same question
+  # `weather.ask` and the same policy. A click opens the weather window.
+  - name: widget
+    kind: process.lua
+    meta:
+      type: windows.widget
+      title: Weather
+      width: 20
+      height: 7
+      order: 10
+      opens: windows.weather:window
+      comment: "The weather widget — the temperature, what it feels like, the city and the weather in words; asks the service once a minute; a click opens the weather window."
+    source: file://widget.lua
+    method: main
+    modules:
+      - process
+    imports:
+      app: windows.shell.sdk:app
+      forecast: windows.weather:forecast
+      widget_view: windows.weather:widget_view
+    security:
+      policies: [windows.weather:window_scope]
+
+  # ─── The migration ────────────────────────────────────────────────────
+  # windows.weather:01_settings — meta.target_db comes from the
+  # `target_db` requirement.
+  - name: 01_settings
+    kind: function.lua
+    meta:
+      type: migration
+      comment: "The weather settings, key → value; the first is the chosen city, copied once from app_weather_settings where an application kept one."
+      timestamp: "2026-09-15T20:00:00Z"
+    source: file://01_settings.lua
+    imports:
+      migration: wippy.migration:migration
+      settings: windows.weather:settings
+    method: migrate

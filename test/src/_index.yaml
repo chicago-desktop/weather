@@ -1,0 +1,162 @@
+version: "1.0"
+namespace: app
+
+# Standalone harness for windows/weather. Provides the host
+# resources the boot needs (app:db, app:processes, gateway + api router, env
+# storage, a permissive actor scope) and wires them through wippy/bootloader,
+# so the module's co-located *_test.lua suites run in isolation. The shell and
+# the base come from their sibling working copies (test/wippy.yaml).
+#
+# The weather service starts here as it would in an application: with no city
+# chosen it does not go to the network, and with no desktop running it puts
+# nothing in a tray — so the boot is also a check of its declarations.
+#
+# Harness-only; excluded from publishing by the module's wippy.yaml.
+
+entries:
+  - name: definition
+    kind: ns.definition
+    meta: { title: Weather Test Harness }
+
+  - name: db
+    kind: db.sql.sqlite
+    meta:
+      comment: "In-memory database — the weather settings table and the tests' own tables."
+    file: ":memory:"
+
+  - name: env_storage
+    kind: env.storage.file
+    meta:
+      type: envstorage
+    file_path: ./.wippy/test.env
+    auto_create: true
+
+  - name: processes
+    kind: process.host
+    lifecycle:
+      auto_start: true
+
+  # The shell's endpoint entries resolve against these at boot; no suite calls
+  # them over HTTP.
+  - name: gateway
+    kind: http.service
+    addr: :19231
+    lifecycle:
+      auto_start: true
+
+  - name: api
+    kind: http.router
+    meta:
+      server: gateway
+    prefix: /api
+
+  - name: user
+    kind: security.policy
+    meta:
+      comment: "Permissive actor scope for the suites."
+    policy:
+      resources: '*'
+      actions: '*'
+      effect: allow
+
+  # The module under test; its source is replaced with ../ in test/wippy.yaml.
+  - name: weather_harness.dep.module
+    version: "*"
+    kind: ns.dependency
+    meta:
+      comment: "The module under test."
+    component: "windows/weather"
+    parameters:
+      - name: windows.weather:target_db
+        value: app:db
+      - name: windows.weather:process_host
+        value: app:processes
+
+  - name: weather_harness.dep.windows
+    version: "*"
+    kind: ns.dependency
+    meta:
+      comment: "The Windows 95 shell the module runs in; from ../../windows-module."
+    component: "windows/shell"
+    parameters:
+      - name: windows.shell:api_router
+        value: app:api
+
+  - name: weather_harness.dep.migration
+    version: "*"
+    kind: ns.dependency
+    meta:
+      comment: "Host binding for the migration dependency."
+    component: "wippy/migration"
+    parameters:
+      - name: wippy.migration:app_db
+        value: app:db
+
+  - name: weather_harness.dep.security
+    version: "*"
+    kind: ns.dependency
+    meta:
+      comment: "Platform security groups that give host-managed services their policy scope under strict mode."
+    component: "wippy/security"
+
+  - name: weather_harness.dep.bootloader
+    version: "*"
+    kind: ns.dependency
+    meta:
+      comment: "Host wiring for the standalone test harness."
+    component: "wippy/bootloader"
+    parameters:
+      - name: wippy.bootloader:application_host
+        value: app:processes
+      - name: wippy.bootloader:env_storage
+        value: app:env_storage
+
+  # ─── The module's suites ───────────────────────────────────────────────
+  # They live here, in the harness, and not in the module's src: the module's
+  # `exclude_meta: type: [test]` drops test entries from a module loaded as a
+  # dependency, and the harness loads it as one (the shell keeps its suites
+  # in its harness for the same reason).
+  - name: forecast_test
+    kind: function.lua
+    meta:
+      type: test
+      comment: "The forecast library on Open-Meteo answers recorded 2026-09-15 — parsing and refusals, the geocoder in two languages, the request URLs, captions and the tray's three states."
+      group: Weather
+      suite: windows_weather
+    source: file://forecast_test.lua
+    modules:
+      - json
+    imports:
+      test: wippy.test:test
+      forecast: windows.weather:forecast
+    method: run
+
+  - name: widget_test
+    kind: function.lua
+    meta:
+      type: test
+      comment: "The weather widget — the tray's three states, --° instead of a stale temperature, the tree laid out in the 18×5 body without overlaps."
+      group: Weather
+      suite: windows_weather
+    source: file://widget_test.lua
+    imports:
+      test: wippy.test:test
+      widget_view: windows.weather:widget_view
+      forecast: windows.weather:forecast
+      ui: windows.shell.sdk:ui
+    method: run
+
+  - name: settings_test
+    kind: function.lua
+    meta:
+      type: test
+      comment: "The settings migration — its table exists, and the city an application kept moves over once; a city already there wins; no old table is nothing to do."
+      group: Weather
+      suite: windows_weather
+    source: file://settings_test.lua
+    modules:
+      - sql
+    imports:
+      test: wippy.test:test
+      settings: windows.weather:settings
+    method: run
