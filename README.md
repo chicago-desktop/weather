@@ -1,6 +1,6 @@
 # chicago/weather
 
-Weather for the Windows 95 shell (`chicago/shell`):
+Weather for the Chicago desktop (`chicago/shell`):
 
 - a **window** with the current weather, the week's forecast and a city search;
 - the **temperature in the tray** next to the clock, on every running desktop;

@@ -1,4 +1,4 @@
--- The weather widget on the Windows 95 shell's desktop (FR-006 §9).
+-- The weather widget on the Chicago shell's desktop (FR-006 §9).
 --
 -- No network and no database here, as in the window: once a minute it asks
 -- the weather service for the summary with the same `weather.ask` →

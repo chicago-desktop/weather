@@ -39,7 +39,7 @@ local RETRY_S = 2 * 60
 local TRAY_TTL = 180
 local HTTP_TIMEOUT = "10s"
 
--- The desktop families whose tray gets the weather: the Windows 95 shell's
+-- The desktop families whose tray gets the weather: the Chicago shell's
 -- and the base's own. The service was not started by a compositor and has no
 -- name in its context, so it takes the names from their owners. Each is a
 -- FAMILY of names — `name`, `name.2`, … one desktop per terminal.ssh

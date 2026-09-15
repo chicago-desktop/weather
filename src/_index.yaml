@@ -1,7 +1,7 @@
 version: "1.0"
 namespace: chicago.weather
 
-# Weather for the Windows 95 shell: a window with the current weather, the
+# Weather for the Chicago shell: a window with the current weather, the
 # week's forecast and a city search; the temperature in the tray next to the
 # clock; a desktop widget.
 #
@@ -21,7 +21,7 @@ entries:
     kind: ns.definition
     meta:
       title: Weather
-      description: Weather for the Windows 95 shell — a window with the current weather, the week's forecast and a city search, the temperature in the tray and a desktop widget; data from Open-Meteo, no key needed.
+      description: Weather for the Chicago desktop — a window with the current weather, the week's forecast and a city search, the temperature in the tray and a desktop widget; data from Open-Meteo, no key needed.
 
   # ─── What the module takes from others ────────────────────────────────
   - version: "*"
@@ -38,7 +38,7 @@ entries:
     name: dep.chicago.shell
     kind: ns.dependency
     meta:
-      comment: "The Windows 95 shell — the window SDK and widget kit, and the desktops whose tray gets the weather."
+      comment: "The Chicago shell — the window SDK and widget kit, and the desktops whose tray gets the weather."
     component: chicago/shell
 
   # ─── What the module asks of the application ──────────────────────────
@@ -82,7 +82,7 @@ entries:
 
   # chicago.weather:images
   #
-  # An image pack of the Windows 95 shell (`meta.type: chicago.images`,
+  # An image pack of the Chicago shell (`meta.type: chicago.images`,
   # contract in the shell's docs/icons.md, "Image packs"): PNGs lie as
   # `<size>/<name>.png`, the window and the tray call them
   # `chicago.weather:images/<name>`. Own pixel art, drawn by
@@ -93,7 +93,7 @@ entries:
     kind: fs.directory
     meta:
       type: chicago.images
-      comment: "Weather pictures for the tray, the window and the widget — an image pack of the Windows 95 shell, own pixel art."
+      comment: "Weather pictures for the tray, the window and the widget — an image pack of the Chicago shell, own pixel art."
     base: module
     directory: ./assets/images
     auto_init: false
