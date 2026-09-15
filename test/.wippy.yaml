@@ -6,10 +6,10 @@ version: "1.0"
 workspace:
   replacements:
     chicago/weather: ..
-    # The shell and the base are not in the Hub yet: they come from the
-    # neighbouring working copies. Remove both once they are published.
-    chicago/shell: ../../windows-module
-    chicago/tui-desktop: ../../kickside-module
+    # The shell and the base are resolved from their GitHub repositories by
+    # tag (wippy.lock). To test against a working copy of the shell, add a
+    # replacement here and remove it again before committing:
+    #   chicago/shell: ../../windows-module
 override:
   "chicago.tui_desktop:exec:default_env.HOME": "${env:HOME}"
   "chicago.tui_desktop:exec:default_env.PATH": "${env:PATH}"

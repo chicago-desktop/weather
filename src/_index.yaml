@@ -33,13 +33,27 @@ entries:
 
   # The shell: the window SDK (`app`, `ui`, `gadget`), the desktop families
   # (`chicago.shell.api:control`) and, through it, the base's window API
-  # with the tray command.
-  - version: "*"
+  # with the tray command. Resolved from its GitHub repository by tag —
+  # `component` names the repository, the module keeps its name
+  # (chicago/shell) in the lock; the range says what this module was
+  # written against (v0.2.0 is the first tag), the lock holds the exact one.
+  - version: ">=0.2.0"
     name: dep.chicago.shell
     kind: ns.dependency
     meta:
       comment: "The Chicago shell — the window SDK and widget kit, and the desktops whose tray gets the weather."
-    component: chicago/shell
+    component: github.com/chicago-desktop/shell
+
+  # The base: the compositor whose tray command the service uses. Named
+  # here as a repository as well, because the shell's own dependency on
+  # it is a Hub name and the base is not in the Hub: without this entry
+  # the resolve stops at "chicago/tui-desktop@*: module not found".
+  - version: ">=0.2.0"
+    name: dep.chicago.tui_desktop
+    kind: ns.dependency
+    meta:
+      comment: "The desktop base — the compositor that owns the windows, the widget and the tray the weather goes into."
+    component: github.com/chicago-desktop/tui-desktop
 
   # ─── What the module asks of the application ──────────────────────────
   # The database is named ONCE, here: the migration gets it as meta.target_db

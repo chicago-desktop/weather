@@ -63,15 +63,26 @@ the service, the widget and the image pack.
 ## Development
 
 ```bash
-make lint    # late locals, then `wippy lint` with the local runtime build
+make lint    # late locals, then `wippy lint` with the runtime fork's build
 make test    # the harness in test/ boots the module with the shell and the base
 make icons   # redraw assets/images/{32,16}/*.png
 ```
 
-The shell declares entries with the `gfx` module, which only the local runtime
-build has. The Makefile therefore uses `~/repos/wippy/runtime/dist/wippy-linux-amd64`;
-override it with `WIPPY=…`. The harness takes `chicago/shell` from
-`../../windows-module` and `chicago/tui-desktop` from `../../kickside-module`.
+**A build of the runtime fork from its releases is required**
+([chicago-desktop/runtime](https://github.com/chicago-desktop/runtime),
+`v0.3.40a-chicago.2` or newer): it resolves the shell from GitHub by tag,
+and the shell declares entries with the `gfx` module, which the release
+runtime does not have. The Makefile uses
+`~/repos/wippy/runtime/dist/wippy-linux-amd64`; override it with `WIPPY=…`.
+
+`chicago/shell` and `chicago/tui-desktop` are resolved from their GitHub
+repositories by tag (`component: github.com/chicago-desktop/shell`,
+`version: ">=0.2.0"` in `src/_index.yaml`, the shell also in the harness;
+v0.2.0 is the first tag). The module names the base itself although it
+reaches it through the shell: the shell's own dependency on the base is a
+Hub name, and the base is not in the Hub. No working copy of either is
+needed beside the module: `cd test && wippy update` writes them into
+`test/wippy.lock`, the first time by cloning them into `~/.wippy/git`.
 
 The suites live in `test/src`, not in `src`: `exclude_meta: type: [test]` drops test
 entries from a module loaded as a dependency, and the harness loads it as one.
