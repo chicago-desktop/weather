@@ -1,5 +1,5 @@
 version: "1.0"
-namespace: windows.weather
+namespace: chicago.weather
 
 # Weather for the Windows 95 shell: a window with the current weather, the
 # week's forecast and a city search; the temperature in the tray next to the
@@ -32,14 +32,14 @@ entries:
     component: wippy/migration
 
   # The shell: the window SDK (`app`, `ui`, `gadget`), the desktop families
-  # (`windows.shell.api:control`) and, through it, the base's window API
+  # (`chicago.shell.api:control`) and, through it, the base's window API
   # with the tray command.
   - version: "*"
-    name: dep.windows.shell
+    name: dep.chicago.shell
     kind: ns.dependency
     meta:
       comment: "The Windows 95 shell — the window SDK and widget kit, and the desktops whose tray gets the weather."
-    component: windows/shell
+    component: chicago/shell
 
   # ─── What the module asks of the application ──────────────────────────
   # The database is named ONCE, here: the migration gets it as meta.target_db
@@ -51,9 +51,9 @@ entries:
       comment: "The database the weather keeps its settings in — the chosen city."
     default: app:db
     targets:
-      - entry: windows.weather:01_settings
+      - entry: chicago.weather:01_settings
         path: .meta.target_db
-      - entry: windows.weather:service_db
+      - entry: chicago.weather:service_db
         path: .policy.resources +=
 
   - name: process_host
@@ -62,37 +62,37 @@ entries:
       comment: "The process host the weather service runs on."
     default: app:processes
     targets:
-      - entry: windows.weather:forecaster.service
+      - entry: chicago.weather:forecaster.service
         path: .host
 
   # ─── The library ──────────────────────────────────────────────────────
-  # windows.weather:forecast
+  # chicago.weather:forecast
   - name: forecast
     kind: library.lua
     meta:
       comment: "Open-Meteo's answers parsed, WMO weather codes, the two request URLs, captions for the window, the widget and the tray — one representation for all of them."
     source: file://forecast.lua
 
-  # windows.weather:settings
+  # chicago.weather:settings
   - name: settings
     kind: library.lua
     meta:
       comment: "The settings table's name and the one-time copy of the city an application kept in app_weather_settings."
     source: file://settings.lua
 
-  # windows.weather:images
+  # chicago.weather:images
   #
-  # An image pack of the Windows 95 shell (`meta.type: windows.images`,
+  # An image pack of the Windows 95 shell (`meta.type: chicago.images`,
   # contract in the shell's docs/icons.md, "Image packs"): PNGs lie as
   # `<size>/<name>.png`, the window and the tray call them
-  # `windows.weather:images/<name>`. Own pixel art, drawn by
+  # `chicago.weather:images/<name>`. Own pixel art, drawn by
   # tools/weather_icons.py (`make icons`). The shell finds the pack in the
   # registry when a picture is asked for, so a redrawn file shows without a
   # restart; the compositor reads it with its own rights.
   - name: images
     kind: fs.directory
     meta:
-      type: windows.images
+      type: chicago.images
       comment: "Weather pictures for the tray, the window and the widget — an image pack of the Windows 95 shell, own pixel art."
     base: module
     directory: ./assets/images
@@ -135,7 +135,7 @@ entries:
       actions:
         - registry.get
       resources:
-        - windows.weather:01_settings
+        - chicago.weather:01_settings
       effect: allow
 
   # The two Open-Meteo hosts by name, not `https://*`: a service open to the
@@ -152,7 +152,7 @@ entries:
         - https://geocoding-api.open-meteo.com/*
       effect: allow
 
-  # windows.weather:forecaster
+  # chicago.weather:forecaster
   - name: forecaster
     kind: process.lua
     meta:
@@ -169,18 +169,18 @@ entries:
       - sql
       - time
     imports:
-      forecast: windows.weather:forecast
-      settings: windows.weather:settings
-      desktop: windows.tui_desktop.desktop:window_api
-      control: windows.shell.api:control
+      forecast: chicago.weather:forecast
+      settings: chicago.weather:settings
+      desktop: chicago.tui_desktop.desktop:window_api
+      control: chicago.shell.api:control
 
-  # windows.weather:forecaster.service — its host is the
+  # chicago.weather:forecaster.service — its host is the
   # `process_host` requirement's.
   - name: forecaster.service
     kind: process.service
     meta:
       comment: "Keeps the weather service running — the tray is refreshed with the window closed too."
-    process: windows.weather:forecaster
+    process: chicago.weather:forecaster
     lifecycle:
       auto_start: true
       restart:
@@ -189,12 +189,12 @@ entries:
         backoff_factor: 2.0
       security:
         actor:
-          id: windows.weather.forecaster
+          id: chicago.weather.forecaster
         policies:
-          - windows.weather:service_scope
-          - windows.weather:service_db
-          - windows.weather:service_registry
-          - windows.weather:service_http
+          - chicago.weather:service_scope
+          - chicago.weather:service_db
+          - chicago.weather:service_registry
+          - chicago.weather:service_http
 
   # ─── The window and the widget ────────────────────────────────────────
   - name: window_scope
@@ -209,13 +209,13 @@ entries:
       resources: "*"
       effect: allow
 
-  # windows.weather:window
+  # chicago.weather:window
   - name: window
     kind: process.lua
     meta:
       type: tui_desktop.window
       title: Weather
-      image: windows.weather:images/sun_cloud
+      image: chicago.weather:images/sun_cloud
       icon: "☼"
       group: Programs
       order: 25
@@ -223,30 +223,30 @@ entries:
       height: 24
       window_type: app
       resizable: true
-      pixel_render: windows.shell.sdk:render
-      pixel_state: windows.weather:window
+      pixel_render: chicago.shell.sdk:render
+      pixel_state: chicago.weather:window
       comment: "Weather — now, the week's forecast and a city search; the data is the service's, and a click on the temperature in the tray opens this window."
     source: file://window.lua
     method: main
     modules:
       - process
     imports:
-      app: windows.shell.sdk:app
-      forecast: windows.weather:forecast
+      app: chicago.shell.sdk:app
+      forecast: chicago.weather:forecast
     security:
-      policies: [windows.weather:window_scope]
+      policies: [chicago.weather:window_scope]
 
-  # windows.weather:widget_view
+  # chicago.weather:widget_view
   - name: widget_view
     kind: library.lua
     meta:
       comment: "The weather widget's tree — the tray's three states by the same forecast.tray rule; apart from the process so a test checks it."
     source: file://widget_view.lua
     imports:
-      forecast: windows.weather:forecast
-      gadget: windows.shell.sdk:gadget
+      forecast: chicago.weather:forecast
+      gadget: chicago.shell.sdk:gadget
 
-  # windows.weather:widget
+  # chicago.weather:widget
   #
   # A widget on the shell's desktop (the shell's docs/sdk.md, "Desktop
   # widgets"): the temperature with a picture, the city and the weather in
@@ -255,26 +255,26 @@ entries:
   - name: widget
     kind: process.lua
     meta:
-      type: windows.widget
+      type: chicago.widget
       title: Weather
       width: 20
       height: 7
       order: 10
-      opens: windows.weather:window
+      opens: chicago.weather:window
       comment: "The weather widget — the temperature, what it feels like, the city and the weather in words; asks the service once a minute; a click opens the weather window."
     source: file://widget.lua
     method: main
     modules:
       - process
     imports:
-      app: windows.shell.sdk:app
-      forecast: windows.weather:forecast
-      widget_view: windows.weather:widget_view
+      app: chicago.shell.sdk:app
+      forecast: chicago.weather:forecast
+      widget_view: chicago.weather:widget_view
     security:
-      policies: [windows.weather:window_scope]
+      policies: [chicago.weather:window_scope]
 
   # ─── The migration ────────────────────────────────────────────────────
-  # windows.weather:01_settings — meta.target_db comes from the
+  # chicago.weather:01_settings — meta.target_db comes from the
   # `target_db` requirement.
   - name: 01_settings
     kind: function.lua
@@ -285,5 +285,5 @@ entries:
     source: file://01_settings.lua
     imports:
       migration: wippy.migration:migration
-      settings: windows.weather:settings
+      settings: chicago.weather:settings
     method: migrate

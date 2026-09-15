@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Draw the weather icons of windows/weather — assets/images/{32,16}/<name>.png.
+"""Draw the weather icons of chicago/weather — assets/images/{32,16}/<name>.png.
 
-The image pack `windows.weather:images` of the Windows 95 shell (contract:
+The image pack `chicago.weather:images` of the Windows 95 shell (contract:
 ../windows-module/docs/icons.md, "Image packs of other modules"): the shell
 finds the pack in the registry when a picture is asked for, so a redrawn
 file shows within seconds, no restart. Original pixel art in the Windows 95

@@ -30,9 +30,9 @@ local control = require("control")
 local forecast = require("forecast")
 local settings = require("settings")
 
-local log = logger:named("windows.weather")
+local log = logger:named("chicago.weather")
 
-local MIGRATION = "windows.weather:01_settings"
+local MIGRATION = "chicago.weather:01_settings"
 local TICK = "60s"
 local REFRESH_S = 15 * 60
 local RETRY_S = 2 * 60

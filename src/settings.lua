@@ -11,7 +11,7 @@
 
 local settings = {}
 
-settings.TABLE = "windows_weather_settings"
+settings.TABLE = "chicago_weather_settings"
 -- Where the stand kept the city while the weather lived in its src/app/weather.
 settings.LEGACY = "app_weather_settings"
 

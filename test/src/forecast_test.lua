@@ -98,11 +98,11 @@ local function define_tests()
             local sun_image, sun_icon = forecast.icon(0, true)
             local moon_image, moon_icon = forecast.icon(0, false)
             test.eq(sun_image .. "|" .. sun_icon .. "|" .. moon_image .. "|" .. moon_icon,
-                "windows.weather:images/sun|☼|windows.weather:images/moon|☾")
-            test.eq(select(1, forecast.icon(63, true)), "windows.weather:images/rain")
-            test.eq(select(1, forecast.icon(95, true)), "windows.weather:images/storm")
-            test.eq(select(1, forecast.icon(73, true)), "windows.weather:images/snow")
-            test.eq(select(1, forecast.icon(48, true)), "windows.weather:images/fog")
+                "chicago.weather:images/sun|☼|chicago.weather:images/moon|☾")
+            test.eq(select(1, forecast.icon(63, true)), "chicago.weather:images/rain")
+            test.eq(select(1, forecast.icon(95, true)), "chicago.weather:images/storm")
+            test.eq(select(1, forecast.icon(73, true)), "chicago.weather:images/snow")
+            test.eq(select(1, forecast.icon(48, true)), "chicago.weather:images/fog")
             test.eq(table.concat({forecast.degrees(17.4), forecast.degrees(-2.5), forecast.degrees(0.4), forecast.degrees(nil)}, "|"),
                 "+17°|-3°|0°|--°")
             test.eq(table.concat({forecast.compass(0), forecast.compass(225), forecast.compass(359), forecast.compass(nil)}, "|"),

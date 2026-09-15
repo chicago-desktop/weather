@@ -1,7 +1,7 @@
 version: "1.0"
 namespace: app
 
-# Standalone harness for windows/weather. Provides the host
+# Standalone harness for chicago/weather. Provides the host
 # resources the boot needs (app:db, app:processes, gateway + api router, env
 # storage, a permissive actor scope) and wires them through wippy/bootloader,
 # so the module's co-located *_test.lua suites run in isolation. The shell and
@@ -65,21 +65,21 @@ entries:
     kind: ns.dependency
     meta:
       comment: "The module under test."
-    component: "windows/weather"
+    component: "chicago/weather"
     parameters:
-      - name: windows.weather:target_db
+      - name: chicago.weather:target_db
         value: app:db
-      - name: windows.weather:process_host
+      - name: chicago.weather:process_host
         value: app:processes
 
-  - name: weather_harness.dep.windows
+  - name: weather_harness.dep.shell
     version: "*"
     kind: ns.dependency
     meta:
       comment: "The Windows 95 shell the module runs in; from ../../windows-module."
-    component: "windows/shell"
+    component: "chicago/shell"
     parameters:
-      - name: windows.shell:api_router
+      - name: chicago.shell:api_router
         value: app:api
 
   - name: weather_harness.dep.migration
@@ -122,13 +122,13 @@ entries:
       type: test
       comment: "The forecast library on Open-Meteo answers recorded 2026-09-15 — parsing and refusals, the geocoder in two languages, the request URLs, captions and the tray's three states."
       group: Weather
-      suite: windows_weather
+      suite: chicago_weather
     source: file://forecast_test.lua
     modules:
       - json
     imports:
       test: wippy.test:test
-      forecast: windows.weather:forecast
+      forecast: chicago.weather:forecast
     method: run
 
   - name: widget_test
@@ -137,13 +137,13 @@ entries:
       type: test
       comment: "The weather widget — the tray's three states, --° instead of a stale temperature, the tree laid out in the 18×5 body without overlaps."
       group: Weather
-      suite: windows_weather
+      suite: chicago_weather
     source: file://widget_test.lua
     imports:
       test: wippy.test:test
-      widget_view: windows.weather:widget_view
-      forecast: windows.weather:forecast
-      ui: windows.shell.sdk:ui
+      widget_view: chicago.weather:widget_view
+      forecast: chicago.weather:forecast
+      ui: chicago.shell.sdk:ui
     method: run
 
   - name: settings_test
@@ -152,11 +152,11 @@ entries:
       type: test
       comment: "The settings migration — its table exists, and the city an application kept moves over once; a city already there wins; no old table is nothing to do."
       group: Weather
-      suite: windows_weather
+      suite: chicago_weather
     source: file://settings_test.lua
     modules:
       - sql
     imports:
       test: wippy.test:test
-      settings: windows.weather:settings
+      settings: chicago.weather:settings
     method: run

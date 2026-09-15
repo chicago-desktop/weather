@@ -7,5 +7,5 @@ version: "1.0"
 # directories right next to it.
 workspace:
   replacements:
-    windows/shell: ../windows-module
-    windows/tui-desktop: ../kickside-module
+    chicago/shell: ../windows-module
+    chicago/tui-desktop: ../kickside-module

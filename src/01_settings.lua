@@ -26,7 +26,7 @@ local function drop(db: any)
 end
 
 return require("migration").define(function()
-    migration("Create windows_weather_settings, copying the stand's city", function()
+    migration("Create chicago_weather_settings, copying the stand's city", function()
         database("postgres", function()
             up(up_on("postgres"))
             down(drop)

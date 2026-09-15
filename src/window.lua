@@ -1,7 +1,7 @@
 -- The weather window: the current weather, the week's forecast and a city search.
 --
 -- No network here at all: everything is asked of the service
--- `windows.weather` with a message, the answer arrives on its own
+-- `chicago.weather` with a message, the answer arrives on its own
 -- topic, and the window gets it as an action `{type = "channel"}` without
 -- stopping drawing. A refusal — no service, the network did not answer, no
 -- city found — becomes the status line, not an empty window.

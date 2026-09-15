@@ -1,6 +1,6 @@
-# windows/weather
+# chicago/weather
 
-Weather for the Windows 95 shell (`windows/shell`):
+Weather for the Windows 95 shell (`chicago/shell`):
 
 - a **window** with the current weather, the week's forecast and a city search;
 - the **temperature in the tray** next to the clock, on every running desktop;
@@ -11,18 +11,18 @@ The data comes from [Open-Meteo](https://open-meteo.com), which needs no key.
 
 ## Parts
 
-Namespace `windows.weather`.
+Namespace `chicago.weather`.
 
 | Entry | What |
 |---|---|
-| `forecaster` + `forecaster.service` | The service. The only part that goes to the network and the database: it remembers the city, asks Open-Meteo every 15 minutes and refreshes the tray item every minute. Registered in the process registry as `windows.weather`; actor `windows.weather.forecaster`. |
+| `forecaster` + `forecaster.service` | The service. The only part that goes to the network and the database: it remembers the city, asks Open-Meteo every 15 minutes and refreshes the tray item every minute. Registered in the process registry as `chicago.weather`; actor `chicago.weather.forecaster`. |
 | `window` | The window, in Programs. It asks the service with `weather.ask` and gets the answer on `weather.reply`; no network, no database. |
 | `widget` + `widget_view` | The desktop widget (20×7), the same question once a minute; a click opens the window. |
 | `forecast` | The pure library the others share: parsing Open-Meteo's answers, WMO codes, the two request URLs, captions, the tray's three states. |
-| `settings` + `01_settings` | The settings table `windows_weather_settings` (key → value; `place` is the chosen city as JSON) and its migration. |
-| `images` | The image pack: 9 pictures in 32 and 16 px under `assets/images`, called `windows.weather:images/<name>`. |
+| `settings` + `01_settings` | The settings table `chicago_weather_settings` (key → value; `place` is the chosen city as JSON) and its migration. |
+| `images` | The image pack: 9 pictures in 32 and 16 px under `assets/images`, called `chicago.weather:images/<name>`. |
 
-The tray item's key is `windows.weather`. A tray item that was not
+The tray item's key is `chicago.weather`. A tray item that was not
 refreshed for 180 s is removed by the compositor, so a stopped service does not
 leave a temperature behind. Data older than an hour is shown as `--°`, never as
 the last temperature.
@@ -31,18 +31,18 @@ the last temperature.
 
 | Requirement | Default | What |
 |---|---|---|
-| `windows.weather:target_db` | `app:db` | The database of the settings table. The service reads it back from the migration entry. |
-| `windows.weather:process_host` | `app:processes` | The host the service runs on. |
+| `chicago.weather:target_db` | `app:db` | The database of the settings table. The service reads it back from the migration entry. |
+| `chicago.weather:process_host` | `app:processes` | The host the service runs on. |
 
 ```yaml
-- name: windows-weather
+- name: chicago-weather
   kind: ns.dependency
-  component: windows/weather
+  component: chicago/weather
   version: "*"
   parameters:
-    - name: windows.weather:target_db
+    - name: chicago.weather:target_db
       value: app:db
-    - name: windows.weather:process_host
+    - name: chicago.weather:process_host
       value: app:processes
 ```
 
@@ -57,7 +57,7 @@ Before this module the weather lived in an application's `src/app/weather`
 the `place` row from `app_weather_settings` when that table exists, so the city
 survives the switch. Where the table does not exist there is nothing to copy. A
 city already in the new table wins. The entry ids moved to the new namespace:
-`app.weather:window` → `windows.weather:window`, and the same for
+`app.weather:window` → `chicago.weather:window`, and the same for
 the service, the widget and the image pack.
 
 ## Development
@@ -70,8 +70,8 @@ make icons   # redraw assets/images/{32,16}/*.png
 
 The shell declares entries with the `gfx` module, which only the local runtime
 build has. The Makefile therefore uses `~/repos/wippy/runtime/dist/wippy-linux-amd64`;
-override it with `WIPPY=…`. The harness takes `windows/shell` from
-`../../windows-module` and `windows/tui-desktop` from `../../kickside-module`.
+override it with `WIPPY=…`. The harness takes `chicago/shell` from
+`../../windows-module` and `chicago/tui-desktop` from `../../kickside-module`.
 
 The suites live in `test/src`, not in `src`: `exclude_meta: type: [test]` drops test
 entries from a module loaded as a dependency, and the harness loads it as one.

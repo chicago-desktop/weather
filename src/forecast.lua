@@ -11,13 +11,13 @@
 local forecast = {}
 
 -- The name the service is registered under, and the topics of talking to it.
-forecast.SERVICE = "windows.weather"
+forecast.SERVICE = "chicago.weather"
 forecast.ASK = "weather.ask"
 forecast.REPLY = "weather.reply"
 
 -- The window a click on the tray item opens, and the tray item's key.
-forecast.WINDOW = "windows.weather:window"
-forecast.TRAY_KEY = "windows.weather"
+forecast.WINDOW = "chicago.weather:window"
+forecast.TRAY_KEY = "chicago.weather"
 
 -- Data older than this is no longer "now". The tray then shows a dash, not the
 -- last temperature: a caption that does not change for hours looks healthy
@@ -47,13 +47,13 @@ function forecast.describe(code: any): string
 end
 
 -- The picture for a code and the time of day. `image` is a picture of the
--- module's image pack `windows.weather:images` (assets/images, PNG
+-- module's image pack `chicago.weather:images` (assets/images, PNG
 -- in 32 and 16, drawn by tools/weather_icons.py); the shell finds the pack in
--- the registry by `meta.type: windows.images` and rereads the file every few
+-- the registry by `meta.type: chicago.images` and rereads the file every few
 -- seconds. `icon` is one character one cell wide for a theme without
 -- graphics: ⛅ and ⚡ are left out on purpose, they are two cells wide and would
 -- push the taskbar apart.
-forecast.IMAGES = "windows.weather:images"
+forecast.IMAGES = "chicago.weather:images"
 local ICONS: {[string]: {image: string, icon: string}} = {
     sun = {image = forecast.IMAGES .. "/sun", icon = "☼"},
     moon = {image = forecast.IMAGES .. "/moon", icon = "☾"},

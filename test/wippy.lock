@@ -2,11 +2,11 @@ directories:
     modules: .wippy
     src: ./src
 modules:
-    - name: windows/tui-desktop
+    - name: chicago/tui-desktop
       version: 0.0.0
-    - name: windows/shell
+    - name: chicago/shell
       version: 0.0.0
-    - name: windows/weather
+    - name: chicago/weather
       version: 0.0.0
     - name: wippy/bootloader
       version: 0.3.14

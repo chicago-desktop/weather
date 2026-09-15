@@ -54,7 +54,7 @@ local function define_tests()
         test.it("fresh data: the temperature with a picture, what it feels like, the city and the weather in words", function()
             local tree = widget_view.tree({place = SAMARA, data = DATA, age = 120})
             test.eq(table.concat(shown(tree), " | "),
-                "[windows.weather:images/sun_cloud] | +17° | Feels like +15° | Samara | Partly cloudy")
+                "[chicago.weather:images/sun_cloud] | +17° | Feels like +15° | Samara | Partly cloudy")
             fits(tree, "fresh")
         end)
 
