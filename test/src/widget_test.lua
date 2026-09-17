@@ -78,5 +78,20 @@ local function define_tests()
     end)
 end
 
-local run_cases = test.run_cases(define_tests)
+local original_tests = define_tests
+local function configured_tests()
+    original_tests()
+    test.describe("compact grid widget", function()
+        test.it("keeps the temperature and city readable in a 1 x 1 panel", function()
+            local tree = widget_view.tree({place = SAMARA, data = DATA, age = 0}, {width = 8, height = 2})
+            local plan = ui.plan(tree, 8, 2, ui.interaction())
+            test.eq(#plan.items, 2)
+            test.eq(plan.items[1].rect.h, 1)
+            test.eq(plan.items[2].rect.h, 1)
+            test.eq(tree.children[1].text, "+17°")
+            test.eq(tree.children[2].text, "Samara")
+        end)
+    end)
+end
+local run_cases = test.run_cases(configured_tests)
 return {run = function(options) return run_cases(options) end}

@@ -67,7 +67,7 @@ function definition.update(model: any, action: any, context: any): any
 end
 
 function definition.view(model: any, context: any): any
-    return widget_view.tree(model)
+    return widget_view.tree(model, context)
 end
 
 function definition.dispose(model: any, context: any)
