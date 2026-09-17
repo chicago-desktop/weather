@@ -160,3 +160,11 @@ entries:
       test: wippy.test:test
       settings: chicago.weather:settings
     method: run
+  - name: locations_test
+    kind: function.lua
+    source: file://locations_test.lua
+    method: run
+    meta: {type: test, suite: chicago_weather, group: Weather}
+    imports:
+      test: wippy.test:test
+      locations: chicago.weather:locations

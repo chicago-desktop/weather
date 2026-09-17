@@ -88,6 +88,12 @@ entries:
     source: file://forecast.lua
 
   # chicago.weather:settings
+  - name: locations
+    kind: library.lua
+    source: file://locations.lua
+    imports:
+      forecast: chicago.weather:forecast
+
   - name: settings
     kind: library.lua
     meta:
@@ -185,6 +191,7 @@ entries:
     imports:
       forecast: chicago.weather:forecast
       settings: chicago.weather:settings
+      locations: chicago.weather:locations
       desktop: chicago.tui_desktop.desktop:window_api
       control: chicago.shell.api:control
 
@@ -271,6 +278,18 @@ entries:
     meta:
       type: chicago.widget
       title: Weather
+      settings:
+        fields:
+          - key: place
+            label: City
+            type: lookup
+            placeholder: Search for a city
+            label_fields: [name, admin1, country]
+            provider:
+              service: chicago.weather
+              topic: weather.ask
+              reply: weather.reply
+              operation: search
       width: 20
       height: 7
       order: 10

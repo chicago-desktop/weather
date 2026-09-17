@@ -92,3 +92,14 @@ answers recorded on 2026-09-15, kept verbatim in `test/src/fixtures/`.
 ## License
 
 MIT.
+
+## Per-instance widget settings
+
+The widget declares a City lookup in `meta.settings.fields`. Desktop Widgets
+opens that form from Properties → Widget settings. Search, select a result,
+then save. The selected place (name, coordinates, country) is stored in the
+instance's `config.place`. Each widget requests its own location from the
+service; it does not change the Weather window or tray location. Instances
+without `config.place` retain the shared-city behavior for compatibility.
+Forecasts are cached per location (15 minutes, 2-minute retry, at most 32
+locations). A failed location keeps its own last reading and error.

@@ -29,6 +29,8 @@ local desktop = require("desktop")
 local control = require("control")
 local forecast = require("forecast")
 local settings = require("settings")
+local locations = require("locations")
+local location_cache: any = {}
 
 local log = logger:named("chicago.weather")
 
@@ -204,7 +206,9 @@ local function handle(message: any)
     local to = message:from()
     local op = type(body.op) == "string" and body.op or ""
 
-    if op == "get" then
+    if op == "get_location" then
+        answer(to, locations.get(location_cache, body.place, now_s(), fetch_forecast))
+    elseif op == "get" then
         answer(to, snapshot(op))
     elseif op == "refresh" then
         refresh(true)

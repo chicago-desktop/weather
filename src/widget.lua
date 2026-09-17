@@ -20,12 +20,17 @@ local function ask(model: any)
         model.problem, model.age = "weather service is not running", nil
         return
     end
-    local sent, err = process.send(pid, forecast.ASK, {op = "get"})
+    local sent, err = process.send(pid, forecast.ASK, {op = model.configured_place and "get_location" or "get", place = model.configured_place})
     if not sent then model.problem, model.age = "request not sent: " .. tostring(err), nil end
 end
 
 function definition.init(args: any, context: any): any
     local model: any = {place = nil, data = nil, age = nil, problem = nil, replies = nil}
+    if type(args) == "table" and args.place ~= nil then
+        local place, err = forecast.place(args.place)
+        if not place then model.problem = tostring(err); model.invalid_config = true; return model end
+        model.configured_place = place
+    end
     -- The subscription comes BEFORE the first question: a quick answer that
     -- arrived earlier would land in the inbox, where nobody reads it.
     local replies = process.listen(forecast.REPLY, {message = true})
@@ -46,10 +51,11 @@ function definition.update(model: any, action: any, context: any): any
             model.problem = tostring(body.error or "the weather service refused")
             return nil
         end
-        model.problem = nil
+        model.problem = body.error
         model.place, model.data, model.age = body.place, body.data, tonumber(body.age)
         return nil
     elseif action.type == "tick" then
+        if model.invalid_config then return false end
         -- The answer comes as its own action; a redraw now is needed only
         -- when asking failed.
         local before = model.problem
